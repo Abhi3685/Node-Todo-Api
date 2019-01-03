@@ -14,7 +14,11 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', { useNewUrlParser: true
 	// 	console.log('Unable to fetch todos', err);
 	// });
 
-	db.collection("Users").findOneAndUpdate({_id: new ObjectID('5c2c7a1b187fefe4069e1655')}, { $set: {name: 'Abhishek'}, $inc: {age: 1} }, {returnOriginal: false}).then((result)=>{
+	db.collection("Users").findOneAndUpdate(
+		{_id: new ObjectID('5c2c7a1b187fefe4069e1655')}, 
+		{ $set: {name: 'Abhishek'}, $inc: {age: 1} }, 
+		{returnOriginal: false}
+		).then((result)=>{
 		console.log(result);
 	}, (err)=>{
 		console.log('Unable to fetch todos', err);
