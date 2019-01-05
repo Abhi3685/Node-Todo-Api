@@ -17,6 +17,27 @@ function generateAuthToken(user, callback) {
 	});
 }
 
+function findByToken(token, callback) {
+	var decoded;
+	try {
+		decoded = jwt.verify(token, 'abc123');
+		User.findOne({
+			'_id': decoded.id,
+			'tokens.access': 'auth',
+			'tokens.token': token
+		}, (err, user) => {
+			if(err){
+				callback(err);
+			} else {
+				callback(null, user);
+			}
+		});
+	} catch(e) {
+		callback(e);
+	}
+}
+
 module.exports = {
-	generateAuthToken
+	generateAuthToken,
+	findByToken
 }

@@ -5,6 +5,7 @@ var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 var utils = require('./utils/utils');
+var authenticate = require('./utils/authenticate');
 
 var app = express();
 app.use(bodyParser.json());
@@ -108,6 +109,23 @@ app.post('/user', (req, res) => {
 			});
 		}
 	});
+});
+
+var authenticate = (req, res, next) => {
+	var token = req.header('x-auth');
+
+	utils.findByToken(token, (err, user) => {
+		if(err && !user) res.status(401).send();
+		else {
+			req.user = {_id: user._id, email: user.email};
+			req.token = token;
+			next();
+		} 
+	});
+};
+
+app.get('/user/me', authenticate, (req, res) => {
+	res.send(req.user);
 });
 
 app.listen(port, ()=>{
