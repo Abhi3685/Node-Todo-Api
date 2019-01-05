@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
 var {User} = require('./../models/user');
 
 function generateAuthToken(user, callback) {
@@ -37,7 +39,28 @@ function findByToken(token, callback) {
 	}
 }
 
+function findByCredentials(email, password, callback) {
+	User.findOne({email}, (err, user) => {
+		if(err) callback(err);
+		else {
+			if(!user){
+				err = "User Not Found";
+				callback(err);
+			} else {
+				bcrypt.compare(password, user.password, (err, res) => {
+					if(!res){
+						err = "Incorrect Password";
+						callback(err);
+					} 
+					else callback(null, user);
+				});
+			}
+		}
+	});
+}
+
 module.exports = {
 	generateAuthToken,
-	findByToken
+	findByToken,
+	findByCredentials
 }

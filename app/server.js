@@ -128,6 +128,22 @@ app.get('/user/me', authenticate, (req, res) => {
 	res.send(req.user);
 });
 
+app.post('/user/login', (req, res) => {
+	var body = {};
+	if(req.body.email) body.email = req.body.email;	
+	if(req.body.password) body.password = req.body.password;
+
+	utils.findByCredentials(body.email, body.password, (err, user) => {
+		if(err) res.status(400).send({err});
+		else {
+			utils.generateAuthToken(user, (err, tokenUser) => {
+				if(err) res.status(400).send(err);
+				else res.header('x-auth', tokenUser.tokens[0].token).send({_id: tokenUser._id, email: tokenUser.email});
+			});
+		}
+	});
+});
+
 app.listen(port, ()=>{
 	console.log(`Started on port ${port}`);
 });
