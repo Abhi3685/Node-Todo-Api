@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var utils = require('./utils/utils');
 
 var app = express();
 app.use(bodyParser.json());
@@ -87,6 +88,25 @@ app.patch('/todo/:id', (req, res) => {
 			return res.status(404).send();
 		}
 		res.send(todo);
+	});
+});
+
+app.post('/user', (req, res) => {
+	var body = {};
+	if(req.body.email) body.email = req.body.email;
+	if(req.body.password) body.password = req.body.password;
+
+	var user = new User(body);
+
+	user.save((err, user) => {
+		if(err) {
+			res.status(400).send(err);
+		} else {
+			utils.generateAuthToken(user, (err, tokenUser) => {
+				if(err) res.status(400).send(err);
+				else res.header('x-auth', tokenUser.tokens[0].token).send({_id: tokenUser._id, email: tokenUser.email});
+			});
+		}
 	});
 });
 
