@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+var bcrypt = require('bcryptjs');
 
 var UserSchema = new mongoose.Schema({
 	email: {
@@ -27,6 +28,19 @@ var UserSchema = new mongoose.Schema({
 			required: true
 		}
 	}]
+});
+
+UserSchema.pre('save', function(next){
+	var user = this;
+
+	if (!user.isModified('password')) return next();
+
+	bcrypt.genSalt(10, function(err, salt) {
+	    bcrypt.hash(user.password, salt, function(err, hash) {
+	        user.password = hash;
+	        next();
+	    });
+	});
 });
 
 var User  = mongoose.model('User', UserSchema);
