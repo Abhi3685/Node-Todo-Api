@@ -30,6 +30,8 @@ function findByToken(token, callback) {
 		}, (err, user) => {
 			if(err){
 				callback(err);
+			} else if(!user){
+				callback({err: "No User Found"});
 			} else {
 				callback(null, user);
 			}
@@ -59,8 +61,16 @@ function findByCredentials(email, password, callback) {
 	});
 }
 
+function removeToken(token, callback) {
+	User.findOneAndUpdate({ 'tokens.token': token }, { $pull: { tokens: {token} } }, (err, user) => {
+		if(err) callback(err);
+		callback(null, user);
+	});
+}
+
 module.exports = {
 	generateAuthToken,
 	findByToken,
-	findByCredentials
+	findByCredentials,
+	removeToken
 }
