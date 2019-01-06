@@ -23,8 +23,11 @@ var authenticate = function(req, res, next){
 	});
 };
 
-app.post('/todo', (req, res) => {
-	var todo = new Todo(req.body);
+app.post('/todo', authenticate, (req, res) => {
+	var todo = new Todo({
+		text: req.body.text,
+		_creator: req.user._id
+	});
 
 	todo.save((err, todo) => {
 		if(err) {
@@ -35,8 +38,10 @@ app.post('/todo', (req, res) => {
 	});
 });
 
-app.get('/todos', (req, res) => {
-	Todo.find({}, (err, todos) => {
+app.get('/todos', authenticate, (req, res) => {
+	Todo.find({
+		_creator: req.user._id
+	}, (err, todos) => {
 		if(err){
 			res.status(400).send(err);
 		} else {
@@ -45,10 +50,13 @@ app.get('/todos', (req, res) => {
 	});
 });
 
-app.get('/todo/:id', (req, res) => {
+app.get('/todo/:id', authenticate, (req, res) => {
 	var todoId = req.params.id;
 
-	Todo.findById(todoId, (err, todo) => {
+	Todo.findOne({
+		_id: todoId,
+		_creator: req.user._id
+	}, (err, todo) => {
 		if(err) {
 			return res.status(400).send();
 		}
@@ -59,10 +67,13 @@ app.get('/todo/:id', (req, res) => {
 	});
 });
 
-app.delete('/todo/:id', (req, res) => {
+app.delete('/todo/:id', authenticate, (req, res) => {
 	var todoId = req.params.id;
 
-	Todo.findByIdAndRemove(todoId, (err, todo) => {
+	Todo.findOneAndRemove({
+		_id: todoId,
+		_creator: req.user._id
+	}, (err, todo) => {
 		if(err) {
 			return res.status(400).send();
 		}
@@ -73,7 +84,7 @@ app.delete('/todo/:id', (req, res) => {
 	});
 });
 
-app.patch('/todo/:id', (req, res) => {
+app.patch('/todo/:id', authenticate, (req, res) => {
 	var todoId = req.params.id;
 	var body = {};
 	var completedAt;
@@ -89,7 +100,10 @@ app.patch('/todo/:id', (req, res) => {
 	}
 	body.completedAt = completedAt;
 
-	Todo.findByIdAndUpdate(todoId, { 
+	Todo.findOneAndUpdate({
+		_id: todoId,
+		_creator: req.user._id
+	}, { 
 		$set: body
 	}, 
 	{ new: true }, 
